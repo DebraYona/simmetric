@@ -1,0 +1,367 @@
+service: transvip-retail # transvip-retail-int
+# app and org for use with dashboard.serverless.com
+# app: transvip-integration-api
+# org: synmmetricslab
+
+# Create an optimized package for our functions
+package:
+  individually: true
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stage: ${env:STAGE}
+  region: ${env:REGION}
+  profile: ${env:PROFILE}
+  stackTags:
+    slsstack: ${self:service}
+
+plugins:
+  # - serverless-bundle
+  - serverless-add-api-key
+  - serverless-dotenv-plugin
+  - serverless-iam-roles-per-function
+  - serverless-offline
+
+custom:
+  apiKeys:
+    - name: ${self:service}-${env:STAGE}-apikey
+
+resources:
+  - ${file(resources/sqs.yml)}
+
+functions:
+  testDB:
+    handler: services/testdb.handler
+    events:
+      - http:
+          path: db
+          method: post
+          private: true
+  health:
+    handler: services/health.handler
+    events:
+      - http:
+          path: /
+          method: get
+          private: true
+  createStatus:
+    handler: services/status/create.handler
+    events:
+      - http:
+          private: true
+          path: status
+          method: post
+  getStatus:
+    handler: services/status/get.handler
+    events:
+      - http:
+          private: true
+          path: status/{serviceOrderId}
+          method: get
+  notificationReceive:
+    handler: services/notification/receive.handler
+    description: receive an status notification from enlace, and updates the internal state
+    events:
+      - http:
+          path: /notification
+          method: post
+          private: true
+          request:
+            schema:
+              application/json: ${file(schemas/notification-receive.json)}
+  getOrder:
+    handler: services/order/get.handler
+    events:
+      - http:
+          path: order/local/{orderId}
+          method: get
+          private: true
+  # --- Receive an order from retail
+  orderCreation:
+    handler: services/order/create.handler
+    description: Receive a retail generated order, to be put on the creation queue
+    timeout: 10
+    memorySize: 128
+    iamRoleStatementsName: ${env:IAM_ROLE_CREATION, orderCreation_Role}
+    iamRoleStatements:
+      - Effect: 'Allow'
+        Action:
+          - sqs:SendMessage
+        Resource:
+          Fn::GetAtt: # [TestQueue, Arn]
+            - OrderPreCreateQueue
+            - Arn
+    environment:
+      region: ${self:provider.region}
+      targetQueue: ${env:ORDER_PRECREATION_QUEUE}
+    events:
+      - http:
+          path: order
+          method: post
+          private: true
+          request:
+            schema:
+              application/json: ${file(schemas/order-creation.json)}
+  orderCreationProcess:
+    handler: services/order/create_process.handler
+    description: Processes a retail generated order in the queue
+    timeout: 15
+    memorySize: 256
+    events:
+      - sqs:
+          batchSize: 1
+          arn:
+            Fn::GetAtt:
+              - OrderCreateQueue
+              - Arn
+  orderPreCreationProcess:
+    handler: services/order/precreate_process.handler
+    description: Processes a retail generated order in the queue, without confirmation
+    timeout: 15
+    memorySize: 256
+    events:
+      - sqs:
+          batchSize: 1
+          arn:
+            Fn::GetAtt:
+              - OrderPreCreateQueue
+              - Arn
+  productPostCreation:
+    handler: services/products/postcreate.handler
+    description: Receive a cud and pass it to the sqs queue for postcreation
+    timeout: 10
+    memorySize: 128
+    iamRoleStatementsName: ${env:IAM_ROLE_POSTCREATION, orderCreation_Role}
+    iamRoleStatements:
+      - Effect: 'Allow'
+        Action:
+          - sqs:SendMessage
+        Resource:
+          Fn::GetAtt: # [TestQueue, Arn]
+            - OrderPostCreateQueue
+            - Arn
+    environment:
+      region: ${self:provider.region}
+      targetQueue: ${env:ORDER_POSTCREATION_QUEUE}
+    events:
+      - http:
+          path: product/postcreate
+          method: post
+          private: true
+          request:
+            schema:
+              application/json: ${file(schemas/product-postcreation.json)}
+  orderPostCreationProcess:
+    handler: services/order/postcreate_process.handler
+    description: Processes a database order in the queue, with confirmation
+    timeout: 15
+    memorySize: 256
+    events:
+      - sqs:
+          batchSize: 1
+          arn:
+            Fn::GetAtt:
+              - OrderPostCreateQueue
+              - Arn
+  # --- Receive an order modification from retail
+  orderModification:
+    handler: services/order/modify.handler
+    description: Modifies a retail generated order, to be put on the modification queue
+    timeout: 10
+    memorySize: 128
+    iamRoleStatementsName: ${env:IAM_ROLE_MODIFICATION, orderModification_Role}
+    iamRoleStatements:
+      - Effect: 'Allow'
+        Action:
+          - sqs:SendMessage
+        Resource:
+          Fn::GetAtt: # [TestQueue, Arn]
+            - OrderModificationQueue
+            - Arn
+    environment:
+      region: ${self:provider.region}
+      targetQueue: ${env:ORDER_MODIFICATION_QUEUE, OrderModificationQueue}
+    events:
+      - http:
+          path: order
+          method: put
+          private: true
+          request:
+            schema:
+              application/json: ${file(schemas/order-modification.json)}
+  orderModificationProcess:
+    handler: services/order/modify_process.handler
+    description: Processes a retail generated order modification in the queue
+    timeout: 15
+    memorySize: 256
+    events:
+      - sqs:
+          batchSize: 1
+          arn:
+            Fn::GetAtt:
+              - OrderModificationQueue
+              - Arn
+  # --- Receive an order cancellation from retail
+  orderCancellation:
+    handler: services/order/cancel.handler
+    description: Cancels a retail generated order, to be put on the cancel queue
+    timeout: 10
+    memorySize: 128
+    iamRoleStatementsName: ${env:IAM_ROLE_CANCELLATION, orderCancellation_Role}
+    iamRoleStatements:
+      - Effect: 'Allow'
+        Action:
+          - sqs:SendMessage
+        Resource:
+          Fn::GetAtt: # [TestQueue, Arn]
+            - OrderCancellationQueue
+            - Arn
+    environment:
+      region: ${self:provider.region}
+      targetQueue: ${env:ORDER_CANCELLATION_QUEUE}
+    events:
+      - http:
+          path: order/cancel
+          method: put
+          private: true
+          request:
+            schema:
+              application/json: ${file(schemas/order-cancellation.json)}
+  orderCancellationProcess:
+    handler: services/order/cancel_process.handler
+    description: Processes a retail generated order cancellation in the queue
+    timeout: 15
+    memorySize: 256
+    events:
+      - sqs:
+          batchSize: 1
+          arn:
+            Fn::GetAtt:
+              - OrderCancellationQueue
+              - Arn
+  # --- order get
+  getOrderStatus:
+    handler: services/order/status_get.handler
+    description: Gets an order status given its CUD
+    timeout: 10
+    memorySize: 128
+    events:
+      - http:
+          path: order/status/{serviceOrderId}
+          method: get
+          private: true
+  # --- CUD or product get
+  getProductStatus:
+    handler: services/products/status_get.handler
+    description: Gets a product status given its CUD
+    timeout: 10
+    memorySize: 128
+    events:
+      - http:
+          path: product/status/{cud}
+          method: get
+          private: true
+  # --- CUD or product update
+  updateProductStatus:
+    handler: services/products/status_update.handler
+    description: Updates a product status given its CUD
+    timeout: 10
+    memorySize: 128
+    events:
+      - http:
+          path: product/{cud}
+          method: put
+          private: true
+          request:
+            schema:
+              application/json: ${file(schemas/product-update.json)}
+  # --- Get all products by status
+  getAllConsolidatedByStatus:
+    handler: services/products/status_get_all_consolidate.handler
+    description: Returns all products from consolidated orders (not last mile) with a given status
+    timeout: 10
+    memorySize: 128
+    events:
+      - http:
+          path: product/all/{status}
+          method: get
+          private: true
+  # --- CUD cancel (Enlace Modify with no new parameters)
+  cancelProduct:
+    handler: services/products/cancel.handler
+    description: Cancels a product given its CUD
+    timeout: 10
+    memorySize: 128
+    iamRoleStatementsName: ${env:IAM_ROLE_PRODUCT_CANCELLATION, orderModification_Role}
+    iamRoleStatements:
+      - Effect: 'Allow'
+        Action:
+          - sqs:SendMessage
+        Resource:
+          Fn::GetAtt: # [TestQueue, Arn]
+            - OrderModificationQueue
+            - Arn
+    environment:
+      region: ${self:provider.region}
+      targetQueue: ${env:ORDER_MODIFICATION_QUEUE, OrderModificationQueue}
+    events:
+      - http:
+          path: product/cancel
+          method: put
+          private: true
+          request:
+            schema:
+              application/json: ${file(schemas/product-cancellation.json)}
+  # --- DLQ processor
+  generalDLQProcess:
+    handler: services/dlq/generaldlq.handler
+    description: DLQ general processor, just logs and returns
+    timeout: 10
+    memorySize: 256
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - GeneralPurposeDLQ
+              - Arn
+  # --- Consolidation updater
+  updateConsolidation:
+    handler: services/consolidation/update.handler
+    description: processes a consolidation and routing uploaded file to update the list in the system
+    timeout: 900
+    memorySize: 1024
+    iamRoleStatements:
+      - Effect: 'Allow'
+        Action:
+          - 's3:GetObject'
+        Resource: arn:aws:s3:::consolidationbuckettransvip-${env:STAGE}/*
+    events:
+      - s3:
+          bucket: consolidationbuckettransvip-${env:STAGE}
+          event: s3:ObjectCreated:*
+  # receives a product list and queues it for postprocessing or creates new products if non existing  
+  processPostCreationList:
+    handler: services/products/process_list.handler
+    description: receives a product list and queues it for postprocessing or creates new products if non existing
+    timeout: 60
+    memorySize: 1024
+    iamRoleStatements:
+      - Effect: 'Allow'
+        Action:
+          - sqs:SendMessage
+        Resource:
+          Fn::GetAtt: # [TestQueue, Arn]
+            - OrderPostCreateQueue
+            - Arn
+    environment:
+      region: ${self:provider.region}
+      targetQueue: ${env:ORDER_POSTCREATION_QUEUE}
+    events:
+      - http:
+          path: product/processlist
+          method: post
+          private: true
+          request:
+            schema:
+              application/json: ${file(schemas/product-list-process.json)}

@@ -1,0 +1,240 @@
+service: transvip-centro-distribucion # transvip-retail-int
+# app and org for use with dashboard.serverless.com
+# app: transvip-integration-api
+# org: synmmetricslab
+
+# Create an optimized package for our functions
+package:
+  individually: true
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stage: ${env:STAGE}
+  region: ${env:REGION}
+  profile: ${env:PROFILE}
+  stackTags:
+    slsstack: ${self:service}
+
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - apigateway:POST
+        - apigateway:GET
+        - apigateway:PATCH
+        - apigateway:DELETE
+      Resource: 'arn:aws:apigateway:us-east-1:*:jyy3mcd40l/*'
+    - Effect: Allow
+      Action:
+        - cognito-idp:ListUsers
+        - cognito-idp:AdminCreateUser
+        - cognito-idp:AdminSetUserPassword
+      Resource: arn:aws:cognito-idp:us-east-1:${env:ACCOUNT_ID}:userpool/${env:USER_POOL_ID}
+
+plugins:
+  # - serverless-bundle
+  - serverless-dotenv-plugin
+  - serverless-iam-roles-per-function
+  - serverless-offline
+
+# resources:
+#   - ${file(resources/sqs.yml)}
+
+functions:
+  health:
+    handler: services/health.handler
+    events:
+      - http:
+          path: /
+          method: get
+          cors: true
+          authorizer:
+            arn: 'arn:aws:cognito-idp:us-east-1:${env:ACCOUNT_ID}:userpool/${env:USER_POOL_ID}'
+  listPackages:
+    handler: services/cd/get.handler
+    events:
+      - http:
+          path: /packages
+          method: get
+          cors: true
+          authorizer:
+            arn: 'arn:aws:cognito-idp:us-east-1:${env:ACCOUNT_ID}:userpool/${env:USER_POOL_ID}'
+  listPackagesWithTravel:
+    handler: services/cd/list.handler
+    events:
+      - http:
+          path: /packages/travel
+          method: get
+          cors: true
+          memorySize: 1024 # Overwrite the default memory size. Default is 1024
+          timeout: 30 # The default is 6 seconds. Note: API Gateway current maximum is 30 seconds
+          authorizer:
+            arn: 'arn:aws:cognito-idp:us-east-1:${env:ACCOUNT_ID}:userpool/${env:USER_POOL_ID}'
+  # Receives a new iniciar viaje order from the app mobile, gets a list of scanned products
+  # Used when loading the truck from retail
+  # creates the travel item and changes the status of the products
+  newTravel:
+    handler: services/cd/create.handler
+    description: Receives a new iniciar viaje order from the app mobile, creating a travel and updating the products
+    events:
+      - http:
+          path: /cd
+          method: post
+          cors: true
+          authorizer:
+            arn: 'arn:aws:cognito-idp:us-east-1:${env:ACCOUNT_ID}:userpool/${env:USER_POOL_ID}'
+  getProductsByTravel:
+    handler: services/travel/getProducts.handler
+    events:
+      - http:
+          path: /travel/{travelId}/products
+          method: get
+          cors: true
+          authorizer:
+            arn: 'arn:aws:cognito-idp:us-east-1:${env:ACCOUNT_ID}:userpool/${env:USER_POOL_ID}'
+  getTravel:
+    handler: services/travel/get.handler
+    events:
+      - http:
+          path: /travel/{travelId}
+          method: get
+          cors: true
+          authorizer:
+            arn: 'arn:aws:cognito-idp:us-east-1:${env:ACCOUNT_ID}:userpool/${env:USER_POOL_ID}'
+  # Receives a finalizar viaje order from the app mobile, gets a travel ID and a status
+  # Used when the truck arrives to the CD
+  # updates travel status and all products related to the travel with the same status
+  updateTravelStatus:
+    handler: services/travel/update.handler
+    description: Receives a finalizar viaje order from the app mobile, updating an existing travel and belonging product
+    events:
+      - http:
+          path: /travel/{travelId}/status/{status}
+          method: post
+          cors: true
+          authorizer:
+            arn: 'arn:aws:cognito-idp:us-east-1:${env:ACCOUNT_ID}:userpool/${env:USER_POOL_ID}'
+  listTravels:
+    handler: services/travel/list.handler
+    events:
+      - http:
+          path: /travel
+          method: get
+          cors: true
+          authorizer:
+            arn: 'arn:aws:cognito-idp:us-east-1:${env:ACCOUNT_ID}:userpool/${env:USER_POOL_ID}'
+  # Unused?
+  updateProductStatus:
+    handler: services/product/update.handler
+    events:
+      - http:
+          path: /product/{productId}/status/{status}
+          method: post
+          cors: true
+          authorizer:
+            arn: 'arn:aws:cognito-idp:us-east-1:${env:ACCOUNT_ID}:userpool/${env:USER_POOL_ID}'
+  # Receives a product list with status
+  # Used when scanning a devolucion list
+  # updates each product
+  updateProductStatusByCud:
+    handler: services/product/updateByCud.handler
+    events:
+      - http:
+          path: /product/cud/{cud}/status/{status}
+          method: put
+          cors: true
+          authorizer:
+            arn: 'arn:aws:cognito-idp:us-east-1:${env:ACCOUNT_ID}:userpool/${env:USER_POOL_ID}'
+  updateProductBatch:
+    handler: services/product/updateBatch.handler
+    description: Receives a product list with status and updates it
+    events:
+      - http:
+          path: /product
+          method: post
+          cors: true
+          authorizer:
+            arn: 'arn:aws:cognito-idp:us-east-1:${env:ACCOUNT_ID}:userpool/${env:USER_POOL_ID}'
+  listUsers:
+    handler: services/users/list.handler
+    events:
+      - http:
+          path: /users
+          method: get
+          cors: true
+          authorizer:
+            arn: 'arn:aws:cognito-idp:us-east-1:${env:ACCOUNT_ID}:userpool/${env:USER_POOL_ID}'
+  createUser:
+    handler: services/users/create.handler
+    events:
+      - http:
+          path: /users
+          method: post
+          cors: true
+          authorizer:
+            arn: 'arn:aws:cognito-idp:us-east-1:${env:ACCOUNT_ID}:userpool/${env:USER_POOL_ID}'
+  # Unused?
+  createTravel:
+    handler: services/travel/create.handler
+    events:
+      - http:
+          path: /travel
+          method: post
+          cors: true
+          authorizer:
+            arn: 'arn:aws:cognito-idp:us-east-1:${env:ACCOUNT_ID}:userpool/${env:USER_POOL_ID}'
+  # Unused?
+  saveTravelLoad:
+    handler: services/travel/saveTravelLoad.handler
+    events:
+      - http:
+          path: /travel/{travelId}
+          method: put
+          cors: true
+          authorizer:
+            arn: 'arn:aws:cognito-idp:us-east-1:${env:ACCOUNT_ID}:userpool/${env:USER_POOL_ID}'
+  listLocationsWithProducts:
+    handler: services/location/list.handler
+    events:
+      - http:
+          path: /location
+          method: get
+          cors: true
+          authorizer:
+            arn: 'arn:aws:cognito-idp:us-east-1:${env:ACCOUNT_ID}:userpool/${env:USER_POOL_ID}'
+  listProductsByLocation:
+    handler: services/product/byLocation.handler
+    events:
+      - http:
+          path: /product/location/{locationId}
+          method: get
+          cors: true
+          authorizer:
+            arn: 'arn:aws:cognito-idp:us-east-1:${env:ACCOUNT_ID}:userpool/${env:USER_POOL_ID}'
+  getReservationsProducts:
+    handler: services/reservation/get.handler
+    events:
+      - http:
+          path: /reservations
+          method: get
+          cors: true
+          authorizer:
+            arn: 'arn:aws:cognito-idp:us-east-1:${env:ACCOUNT_ID}:userpool/${env:USER_POOL_ID}'
+  updateReservation:
+    handler: services/order/update.handler
+    events:
+      - http:
+          path: /order/update
+          method: post
+          cors: true
+          authorizer:
+            arn: 'arn:aws:cognito-idp:us-east-1:${env:ACCOUNT_ID}:userpool/${env:USER_POOL_ID}'
+  productPostcreate:
+    handler: services/product/productPostcreate.handler
+    events:
+      - http:
+          path: /product/postcreate
+          method: post
+          cors: true
+          authorizer:
+            arn: 'arn:aws:cognito-idp:us-east-1:${env:ACCOUNT_ID}:userpool/${env:USER_POOL_ID}'

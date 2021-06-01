@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "title": "processPostCreationList JSON schema",
+  "description": "Required schema for scanned product list postcreation. All fields are required, including nested objects",
+  "default": {},
+
+  "required": ["products"],
+  "additionalProperties": true,
+  "properties": {
+    "products": {
+      "type": "array",
+      "title": "The products schema",
+      "description": "List of product objects to postcreate.",
+      "additionalItems": true,
+      "items": {
+        "anyOf": [
+          {
+            "type": "object",
+            "title": "product item",
+            "description": "product item, to start a postcreation process for this item, if it is not preordered a dummy order will be created and the postorder will not be processed.",
+            "default": {},
+            "required": ["identifier", "status"],
+            "additionalProperties": true,
+            "properties": {
+              "identifier": {
+                "type": "string",
+                "title": "The identifier schema",
+                "description": "cud identifier or scanned code of a product.",
+                "default": ""
+              },
+              "status": {
+                "type": "integer",
+                "title": "The integer schema",
+                "description": "status for this product, will be used to assign the product if it wasn't preordered.",
+                "default": "",
+                "minLength": 1
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

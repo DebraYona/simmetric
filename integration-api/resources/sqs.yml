@@ -1,0 +1,55 @@
+Resources:
+  OrderPostCreateQueue:
+    Type: 'AWS::SQS::Queue'
+    Properties:
+      QueueName: ${env:ORDER_POSTCREATION_QUEUE}
+      RedrivePolicy:
+        deadLetterTargetArn: 
+          Fn::GetAtt: 
+            - GeneralPurposeDLQ
+            - Arn
+        maxReceiveCount: 5
+  OrderPreCreateQueue:
+    Type: 'AWS::SQS::Queue'
+    Properties:
+      QueueName: ${env:ORDER_PRECREATION_QUEUE}
+      RedrivePolicy:
+        deadLetterTargetArn: 
+          Fn::GetAtt: 
+            - GeneralPurposeDLQ
+            - Arn
+        maxReceiveCount: 5
+  OrderCreateQueue:
+    Type: 'AWS::SQS::Queue'
+    Properties:
+      QueueName: ${env:ORDER_CREATION_QUEUE}
+      RedrivePolicy:
+        deadLetterTargetArn: 
+          Fn::GetAtt: 
+            - GeneralPurposeDLQ
+            - Arn
+        maxReceiveCount: 5
+  OrderModificationQueue:
+    Type: 'AWS::SQS::Queue'
+    Properties:
+      QueueName: ${env:ORDER_MODIFICATION_QUEUE}
+      RedrivePolicy:
+        deadLetterTargetArn: 
+          Fn::GetAtt: 
+            - GeneralPurposeDLQ
+            - Arn
+        maxReceiveCount: 5
+  OrderCancellationQueue:
+    Type: 'AWS::SQS::Queue'
+    Properties:
+      QueueName: ${env:ORDER_CANCELLATION_QUEUE}
+      RedrivePolicy:
+        deadLetterTargetArn: 
+          Fn::GetAtt: 
+            - GeneralPurposeDLQ
+            - Arn
+        maxReceiveCount: 5
+  GeneralPurposeDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: ${env:DEAD_LETTER_QUEUE}

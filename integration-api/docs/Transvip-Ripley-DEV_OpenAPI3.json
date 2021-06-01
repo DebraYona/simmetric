@@ -1,0 +1,1778 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Transvip-Ripley-QA",
+    "contact": {},
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "https://1yqg6d9jhe.execute-api.us-east-1.amazonaws.com/qa/",
+      "variables": {}
+    }
+  ],
+  "paths": {
+    "/order": {
+      "post": {
+        "tags": ["Documentation"],
+        "summary": "orderCreation",
+        "description": "Creates a new order in the system, as a preorder. Must be postcreated to be finished",
+        "operationId": "orderCreation",
+        "parameters": [
+          {
+            "name": "x-api-key",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string",
+              "example": "xapikey-example"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/orderCreationRequest"
+              },
+              "example": {
+                "service_order_id": "87420045-1119",
+                "location_id": 10034,
+                "type_of_charge": "Non Refrigerated",
+                "last_mile": 1,
+                "quantity_boxes": 1,
+                "pickup_date": "2020-07-31",
+                "cuds": [
+                  {
+                    "guide_number": "",
+                    "cud": "0390050001423459280101",
+                    "product_description": "Set platos Rojos New Age",
+                    "product_price": "18980",
+                    "product_quantity": "2"
+                  },
+                  {
+                    "guide_number": "",
+                    "cud": "0390050001423459280102",
+                    "product_description": "Vasos rojos Old Age",
+                    "product_price": "6990",
+                    "product_quantity": "1"
+                  }
+                ],
+                "buyer": {
+                  "buyer_name": "Joe comprador",
+                  "buyer_phone_number": "987654321",
+                  "buyer_email": "comprador@myemail.com",
+                  "buyer_rut": "14987973-0"
+                },
+                "receiver": {
+                  "receiver_rut": "24689658-5",
+                  "receiver_name": "Jane receptora",
+                  "receiver_phone_number": "987654320",
+                  "receiver_email": "jane@emailreceptor.com"
+                },
+                "dropoff": {
+                  "drop_address": "Argomedo 60",
+                  "drop_address_line_2": "Depto 13",
+                  "drop_comuna": "Santiago",
+                  "drop_observations": "Tocar la puerta, el citofono no funciona",
+                  "drop_date": "2020-07-31"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "deprecated": false,
+        "responses": {
+          "200": {
+            "description": "Order Received - Pending for creation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "description": "Status code - Default ORDER_RECEIVED"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Status information with service order id"
+                    },
+                    "url": {
+                      "type": "string",
+                      "description": "URL of the endpoint"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "ID of the request"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "description": "Request timestamp"
+                    }
+                  }
+                },
+                "examples": {
+                  "ORDER_RECEIVE": {
+                    "value": "{\n    \"status\": \"ORDER_RECEIVED\",\n    \"message\": \"Order with service id ENLACE-TEST-009 is pending to be created\",\n    \"url\": \"/dev/order\",\n    \"requestId\": \"15965200-6f1b-42a3-b903-7944470f895c\",\n    \"timestamp\": 1595957322506\n}"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Invalid request body - You have to check your parameters according to the creation schema"
+                    }
+                  }
+                },
+                "examples": {
+                  "ORDER_RECEIVE": {
+                    "value": "{\n    \"message\":\"Invalid request body\"\n}"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid location",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error code message - LOCATION_INVALID"
+                    },
+                    "code": {
+                      "type": "integer",
+                      "description": "Error code - 1100"
+                    },
+                    "description": {
+                      "type": "string",
+                      "description": "Error description"
+                    },
+                    "statusCode": {
+                      "type": "integer",
+                      "description": "409"
+                    },
+                    "url": {
+                      "type": "string",
+                      "description": "URL of the endpoint"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "ID of the request"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "description": "Request timestamp"
+                    }
+                  }
+                },
+                "examples": {
+                  "LOCATION_INVALID": {
+                    "value": "{ \n  \"message\":\"LOCATION_INVALID\",\n  \"code\":1100,\n  \"description\":\"The location is invalid, please check the location_id parameter\",\n  \"statusCode\":409,\n  \"url\":\"/dev/order\",\n  \"requestId\":\"adf625f5-73c3-4e7b-86bb-80485abd9d56\",\n  \"timestamp\":1595291733826\n}"
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Order already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error code message - EXISTING_ORDER"
+                    },
+                    "code": {
+                      "type": "integer",
+                      "description": "Error code - 1000"
+                    },
+                    "description": {
+                      "type": "string",
+                      "description": "There is an existing order with that service id, please check the service_order_id parameter"
+                    },
+                    "time": {
+                      "type": "string",
+                      "description": "Timestamp 2020-07-21T00:35:33.861Z"
+                    },
+                    "statusCode": {
+                      "type": "integer",
+                      "description": "409"
+                    },
+                    "url": {
+                      "type": "string",
+                      "description": "URL of the endpoint"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "ID of the request"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "description": "Request timestamp"
+                    }
+                  }
+                },
+                "examples": {
+                  "EXISTING_ORDER": {
+                    "value": "{ \n  \"message\":\"EXISTING_ORDER\",\n  \"code\":1000,\n  \"description\":\"There is an existing order with that service id, please check the service_order_id parameter\",\n  \"time\":\"2020-07-21T00:35:33.861Z\",\n  \"statusCode\":409,\n  \"url\":\"/dev/order\",\n  \"requestId\":\"adf625f5-73c3-4e7b-86bb-80485abd9d56\",\n  \"timestamp\":1595291733826\n}"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["Documentation"],
+        "summary": "orderModification",
+        "description": "Modifies an existing order. Orders will be matched by service_order_id. Any parameters included in the body will override the past parameters used in the past request.",
+        "operationId": "orderModification",
+        "parameters": [
+          {
+            "name": "x-api-key",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string",
+              "example": "x-api-key-example"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/orderModificationRequest"
+              },
+              "example": {
+                "service_order_id": "87420045-1108",
+                "location_id": 10034,
+                "type_of_charge": "Non Refrigerated",
+                "last_mile": 1,
+                "quantity_boxes": 1,
+                "pickup_time": "2020-07-31",
+                "cuds": [
+                  {
+                    "guide_number": "",
+                    "cud": "0390050001423459280101",
+                    "product_description": "Set platos Rojos New Age",
+                    "product_price": "18980",
+                    "product_quantity": "2"
+                  },
+                  {
+                    "guide_number": "",
+                    "cud": "0390050001423459280102",
+                    "product_description": "Vasos rojos Old Age",
+                    "product_price": "6990",
+                    "product_quantity": "1"
+                  }
+                ],
+                "buyer": {
+                  "buyer_name": "Joe comprador",
+                  "buyer_phone_number": "987654321",
+                  "buyer_email": "comprador@myemail.com",
+                  "buyer_rut": "14987973-0"
+                },
+                "receiver": {
+                  "receiver_rut": "24689658-5",
+                  "receiver_name": "Jane receptora",
+                  "receiver_phone_number": "987654320",
+                  "receiver_email": "jane@emailreceptor.com"
+                },
+                "dropoff": {
+                  "drop_address": "Argomedo 60",
+                  "drop_address_line_2": "Depto 13",
+                  "drop_comuna": "Santiago",
+                  "drop_observations": "Tocar la puerta, el citofono no funciona",
+                  "drop_date": "2020-07-31"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Order Modify Received - Pending for modifcation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "description": "Status code - Default ORDER_MODIFY_RECEIVED"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Status information with service order id"
+                    },
+                    "url": {
+                      "type": "string",
+                      "description": "URL of the endpoint"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "ID of the request"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "description": "Request timestamp"
+                    }
+                  }
+                },
+                "examples": {
+                  "ORDER_RECEIVE": {
+                    "value": "{\n    \"status\": \"ORDER_MODIFY_RECEIVED\",\n    \"message\": \"Order with service id ENLACE-TEST-009 is pending to be modified\",\n    \"url\": \"/dev/order\",\n    \"requestId\": \"15965200-6f1b-42a3-b903-7944470f895c\",\n    \"timestamp\": 1595957322506\n}"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Invalid request body - You have to check your parameters according to the creation schema"
+                    }
+                  }
+                },
+                "examples": {
+                  "ORDER_RECEIVE": {
+                    "value": "{\n    \"message\":\"Invalid request body\"\n}"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Order not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error code message - NON_EXISTING_ORDER"
+                    },
+                    "code": {
+                      "type": "integer",
+                      "description": "Error code - 1001"
+                    },
+                    "description": {
+                      "type": "string",
+                      "description": "Error description"
+                    },
+                    "statusCode": {
+                      "type": "integer",
+                      "description": "409"
+                    },
+                    "url": {
+                      "type": "string",
+                      "description": "URL of the endpoint"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "ID of the request"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "description": "Request timestamp"
+                    }
+                  }
+                },
+                "examples": {
+                  "NON_EXISTING_ORDER": {
+                    "value": "{ \n  \"message\":\"NON_EXISTING_ORDER\",\n  \"code\":1001,\n  \"description\":\"An order with that service id could not be found, please check the service_order_id parameter\",\n  \"statusCode\":409,\n  \"url\":\"/dev/order\",\n  \"requestId\":\"adf625f5-73c3-4e7b-86bb-80485abd9d56\",\n  \"timestamp\":1595291733826\n}"
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Invalid location",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error code message - LOCATION_INVALID"
+                    },
+                    "code": {
+                      "type": "integer",
+                      "description": "Error code - 1100"
+                    },
+                    "description": {
+                      "type": "string",
+                      "description": "Error description"
+                    },
+                    "statusCode": {
+                      "type": "integer",
+                      "description": "409"
+                    },
+                    "url": {
+                      "type": "string",
+                      "description": "URL of the endpoint"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "ID of the request"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "description": "Request timestamp"
+                    }
+                  }
+                },
+                "examples": {
+                  "LOCATION_INVALID": {
+                    "value": "{ \n  \"message\":\"LOCATION_INVALID\",\n  \"code\":1100,\n  \"description\":\"The location is invalid, please check the location_id parameter\",\n  \"statusCode\":409,\n  \"url\":\"/dev/order\",\n  \"requestId\":\"adf625f5-73c3-4e7b-86bb-80485abd9d56\",\n  \"timestamp\":1595291733826\n}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/order/cancel": {
+      "put": {
+        "tags": ["Documentation"],
+        "summary": "orderCancellation",
+        "description": "Cancels an existing order, order will be still present in the system",
+        "operationId": "orderCancellation",
+        "parameters": [
+          {
+            "name": "x-api-key",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string",
+              "example": "x-api-key-example"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/orderCancellationRequest"
+              },
+              "example": {
+                "cancellation_reason": "buyer does not want the product",
+                "cancellation_id": "1"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Order Cancel Received - Pending for cancellation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "description": "Status code - Default ORDER_CANCEL_RECEIVED"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Status information with service order id"
+                    },
+                    "url": {
+                      "type": "string",
+                      "description": "URL of the endpoint"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "ID of the request"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "description": "Request timestamp"
+                    }
+                  }
+                },
+                "examples": {
+                  "ORDER_RECEIVE": {
+                    "value": "{\n    \"status\": \"ORDER_CANCEL_RECEIVED\",\n    \"message\": \"Order with service id ENLACE-TEST-009 is pending to be modified\",\n    \"url\": \"/dev/order\",\n    \"requestId\": \"15965200-6f1b-42a3-b903-7944470f895c\",\n    \"timestamp\": 1595957322506\n}"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Invalid request body - You have to check your parameters according to the creation schema"
+                    }
+                  }
+                },
+                "examples": {
+                  "ORDER_RECEIVE": {
+                    "value": "{\n    \"message\":\"Invalid request body\"\n}"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Order not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error code message - NON_EXISTING_ORDER"
+                    },
+                    "code": {
+                      "type": "integer",
+                      "description": "Error code - 1001"
+                    },
+                    "description": {
+                      "type": "string",
+                      "description": "Error description"
+                    },
+                    "statusCode": {
+                      "type": "integer",
+                      "description": "409"
+                    },
+                    "url": {
+                      "type": "string",
+                      "description": "URL of the endpoint"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "ID of the request"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "description": "Request timestamp"
+                    }
+                  }
+                },
+                "examples": {
+                  "NON_EXISTING_ORDER": {
+                    "value": "{ \n  \"message\":\"NON_EXISTING_ORDER\",\n  \"code\":1001,\n  \"description\":\"An order with that service id could not be found, please check the service_order_id parameter\",\n  \"statusCode\":409,\n  \"url\":\"/dev/order\",\n  \"requestId\":\"adf625f5-73c3-4e7b-86bb-80485abd9d56\",\n  \"timestamp\":1595291733826\n}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/product/cancel": {
+      "put": {
+        "tags": ["Documentation"],
+        "summary": "productCancellation",
+        "description": "Cancels a product given its CUD, will react as a modify order with a cancel status for the given product",
+        "operationId": "productCancellation",
+        "parameters": [
+          {
+            "name": "x-api-key",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string",
+              "example": "x-api-key-example"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/productCancellationRequest"
+              },
+              "example": {
+                "cud": "10155684758548",
+                "cancellation_reason": "buyer does not want the product",
+                "cancellation_id": "1"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Product Cancel Received - Pending for cancellation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "description": "Status code - Default ORDER_CANCEL_RECEIVED"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Status information with service order id"
+                    },
+                    "url": {
+                      "type": "string",
+                      "description": "URL of the endpoint"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "ID of the request"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "description": "Request timestamp"
+                    }
+                  }
+                },
+                "examples": {
+                  "ORDER_RECEIVE": {
+                    "value": "{\n    \"status\": \"ORDER_CANCEL_RECEIVED\",\n    \"message\": \"Order with service id ENLACE-TEST-009 is pending to be modified\",\n    \"url\": \"/dev/order\",\n    \"requestId\": \"15965200-6f1b-42a3-b903-7944470f895c\",\n    \"timestamp\": 1595957322506\n}"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Invalid request body - You have to check your parameters according to the creation schema"
+                    }
+                  }
+                },
+                "examples": {
+                  "ORDER_RECEIVE": {
+                    "value": "{\n    \"message\":\"Invalid request body\"\n}"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Product not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error code message - NON_EXISTING_ORDER"
+                    },
+                    "code": {
+                      "type": "integer",
+                      "description": "Error code - 1001"
+                    },
+                    "description": {
+                      "type": "string",
+                      "description": "Error description"
+                    },
+                    "statusCode": {
+                      "type": "integer",
+                      "description": "409"
+                    },
+                    "url": {
+                      "type": "string",
+                      "description": "URL of the endpoint"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "ID of the request"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "description": "Request timestamp"
+                    }
+                  }
+                },
+                "examples": {
+                  "NON_EXISTING_ORDER": {
+                    "value": "{ \n  \"message\":\"NON_EXISTING_ORDER\",\n  \"code\":1001,\n  \"description\":\"An order with that service id could not be found, please check the service_order_id parameter\",\n  \"statusCode\":409,\n  \"url\":\"/dev/order\",\n  \"requestId\":\"adf625f5-73c3-4e7b-86bb-80485abd9d56\",\n  \"timestamp\":1595291733826\n}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/product/postcreate": {
+      "put": {
+        "tags": ["Documentation"],
+        "summary": "productPostCreation",
+        "description": "Postcreates a CUD, will validate with enlace the relevant values",
+        "operationId": "productPostcreation",
+        "parameters": [
+          {
+            "name": "x-api-key",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string",
+              "example": "x-api-key-example"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/productPostCreationRequest"
+              },
+              "example": {
+                "cud": "10155684758548",
+                "newStatus": 215
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Product PostCreation Received - Pending for processsing",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "description": "Status code - Default PRODUCT_POSTCREATE_RECEIVED"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Status information with the CUD id"
+                    },
+                    "url": {
+                      "type": "string",
+                      "description": "URL of the endpoint"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "ID of the request"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "description": "Request timestamp"
+                    }
+                  }
+                },
+                "examples": {
+                  "ORDER_RECEIVE": {
+                    "value": "{\n    \"status\": \"PRODUCT_POSTCREATE_RECEIVED\",\n    \"message\": \"Product with cud id PRE-TEST-008-CUD02 is pending to be postcreated\",\n    \"url\": \"/dev/product/postcreate\",\n    \"requestId\": \"15965200-6f1b-42a3-b903-7944470f895c\",\n    \"timestamp\": 1595957322506\n}"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Invalid request body - You have to check your parameters according to the creation schema"
+                    }
+                  }
+                },
+                "examples": {
+                  "ORDER_RECEIVE": {
+                    "value": "{\n    \"message\":\"Invalid request body\"\n}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/status/{serviceOrderID}": {
+      "get": {
+        "tags": ["Documentation"],
+        "summary": "getStatus",
+        "description": "THIS IS A DEBUGGING ENDPOINT. It will return all transactions registered within the capa media implementation, will not return product or order current status. This endpoint will always return ok, but the data field will be empty if the order does not exist",
+        "operationId": "getStatus",
+        "parameters": [
+          {
+            "name": "serviceOrderID",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string",
+              "example": "87420045-1119"
+            }
+          },
+          {
+            "name": "x-api-key",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string",
+              "example": "x-api-key-example"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Order Status information",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "description": "Status code - Default ORDER_STATUS_INFO"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Status information with service order id"
+                    },
+                    "url": {
+                      "type": "string",
+                      "description": "URL of the endpoint"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "ID of the request"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "description": "Request timestamp"
+                    }
+                  }
+                },
+                "examples": {
+                  "ORDER_RECEIVE": {
+                    "value": "{\n  \"status\": \"ORDER_STATUS_INFO\",\n  \"message\": \"Status correctly retrieved\",\n  \"data\": [\n      {\n          \"id\": 79,\n          \"service_order_id\": \"ENLACE-TEST-005\",\n          \"job_id\": null,\n          \"order_id\": null,\n          \"status\": \"FAILED_TO_BOOK\",\n          \"message\": \"The backend could not retrieve a booking for this service\",\n          \"data\": \"\",\n          \"created_at\": \"2020-07-27T21:50:46.000Z\",\n          \"updated_at\": \"2020-07-27T21:50:46.000Z\"\n      },\n      {\n          \"id\": 80,\n          \"service_order_id\": \"ENLACE-TEST-005\",\n          \"job_id\": null,\n          \"order_id\": 32,\n          \"status\": \"ORDER_CREATED\",\n          \"message\": \"Order created waiting for verification\",\n          \"data\": \"\",\n          \"created_at\": \"2020-07-27T21:55:10.000Z\",\n          \"updated_at\": \"2020-07-27T21:55:10.000Z\"\n      }\n  ],\n  \"url\": \"/dev/status/ENLACE-TEST-005\",\n  \"requestId\": \"4d8f8fe6-1bcb-4bf3-8037-113ccd534a5b\",\n  \"timestamp\": 1595970656374\n}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/order/status/{serviceOrderID}": {
+      "get": {
+        "tags": ["Documentation"],
+        "summary": "getOrderStatus",
+        "description": "Returns the current state of the order given its serviceOrderID, gets the data directly from enlace. Status is 6 if available and 9 if cancelled",
+        "operationId": "getOrderStatus",
+        "parameters": [
+          {
+            "name": "serviceOrderID",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string",
+              "example": "87420045-1119"
+            }
+          },
+          {
+            "name": "x-api-key",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string",
+              "example": "x-api-key-example"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Order Status information",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "description": "Status code - Default is ok"
+                    },
+                    "order_status": {
+                      "type": "integer",
+                      "description": "if the order is available value is 6, if the order is cancelled is 9"
+                    },
+                    "url": {
+                      "type": "string",
+                      "description": "URL of the endpoint"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "ID of the request"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "description": "Request timestamp"
+                    }
+                  }
+                },
+                "examples": {
+                  "ORDER_STATUS": {
+                    "value": {
+                      "status": "ok",
+                      "order_status": 6,
+                      "url": "/dev/order/status/ENLACE-TEST-310",
+                      "requestId": "a1aa4543-ca90-41a0-9cfa-2896860d77a9",
+                      "timestamp": 1596637869175
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Product Status not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "error description"
+                    },
+                    "url": {
+                      "type": "string",
+                      "description": "URL of the endpoint"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "ID of the request"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "description": "Request timestamp"
+                    }
+                  }
+                },
+                "examples": {
+                  "ORDER ERROR": {
+                    "value": {
+                      "message": "Enlace could not find this order",
+                      "code": "INTERNAL_ERROR",
+                      "time": "2020-08-05T15:57:16.588Z",
+                      "statusCode": 500,
+                      "url": "/dev/order/status/ENLACE-TEST-310a",
+                      "requestId": "c2c44190-36b5-4771-9053-aba7c7a59423",
+                      "timestamp": 1596643034758
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/product/status/{cud}": {
+      "get": {
+        "tags": ["Documentation"],
+        "summary": "getProductStatus",
+        "description": "Returns the current state of the product given its cud, gets the data directly from enlace. Status is 6 if available and 9 if cancelled",
+        "operationId": "getProductStatus",
+        "parameters": [
+          {
+            "name": "cud",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string",
+              "example": "021654865120235465"
+            }
+          },
+          {
+            "name": "x-api-key",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string",
+              "example": "x-api-key-example"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product Status information",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "description": "Status code - Default is ok"
+                    },
+                    "product_status": {
+                      "type": "integer",
+                      "description": "if the product is available value is 6, if the product is cancelled is 9"
+                    },
+                    "url": {
+                      "type": "string",
+                      "description": "URL of the endpoint"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "ID of the request"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "description": "Request timestamp"
+                    }
+                  }
+                },
+                "examples": {
+                  "PRODUCT_STATUS": {
+                    "value": {
+                      "status": "ok",
+                      "product_status": 6,
+                      "url": "/dev/product/status/TESTCUD001-310",
+                      "requestId": "9634a400-4cc7-44a6-9409-e7bd858adc0a",
+                      "timestamp": 1596637879103
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Product Status not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "error description"
+                    },
+                    "url": {
+                      "type": "string",
+                      "description": "URL of the endpoint"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "ID of the request"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "description": "Request timestamp"
+                    }
+                  }
+                },
+                "examples": {
+                  "PRODUCT ERROR": {
+                    "value": {
+                      "message": "We couldn't find the defined cud",
+                      "code": "INTERNAL_ERROR",
+                      "time": "2020-08-05T15:28:46.767Z",
+                      "statusCode": 500,
+                      "url": "/dev/product/status/TESTCUD001-310aaa",
+                      "requestId": "3d79ac45-3eaa-42c8-afb9-0fc34cf12b80",
+                      "timestamp": 1596641324658
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/notification": {
+      "post": {
+        "tags": ["Documentation"],
+        "summary": "notificationReceive",
+        "description": "Receive an status notification from enlace, and updates the internal state. Will fail if the service_order_id does not exist, but won't fail for non-existing cuds",
+        "operationId": "notificationReceive",
+        "parameters": [
+          {
+            "name": "x-api-key",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string",
+              "example": "x-api-key-example"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/notificationReceiveRequest"
+              },
+              "example": {
+                "service_order_id": "ENLACE-TEST-319",
+                "order_state": 6,
+                "cuds": [
+                  {
+                    "cud_id": "TESTCUD001-319",
+                    "cud_status": 6
+                  },
+                  {
+                    "cud_id": "TESTCUD002-319",
+                    "cud_status": 9
+                  }
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Product Status information",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "description": "Status code - Default is ok"
+                    },
+                    "url": {
+                      "type": "string",
+                      "description": "URL of the endpoint"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "ID of the request"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "description": "Request timestamp"
+                    }
+                  }
+                },
+                "examples": {
+                  "NOTIFICATION_RECEIVED": {
+                    "value": {
+                      "status": "ok",
+                      "message": "Notification received",
+                      "url": "/dev/notification",
+                      "requestId": "260f6b57-057f-4850-8765-377825a7835f",
+                      "timestamp": 1597092266609
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Product Status not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "error description"
+                    },
+                    "url": {
+                      "type": "string",
+                      "description": "URL of the endpoint"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "ID of the request"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "description": "Request timestamp"
+                    }
+                  }
+                },
+                "examples": {
+                  "ORDER ERROR": {
+                    "value": {
+    "message": "We couldn't find the order in the database",
+    "code": "INTERNAL_ERROR",
+    "time": "2020-08-10T21:20:54.388Z",
+    "statusCode": 500,
+    "url": "/dev/notification",
+    "requestId": "feebae74-f45a-4e28-bb0b-c10341f59658",
+    "timestamp": 1597094452334
+}
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "orderCreationRequest": {
+        "title": "orderCreationRequest",
+        "required": [
+          "service_order_id",
+          "location_id",
+          "last_mile",
+          "quantity_boxes",
+          "pickup_date",
+          "cuds",
+          "buyer",
+          "receiver",
+          "dropoff"
+        ],
+        "type": "object",
+        "properties": {
+          "service_order_id": {
+            "description": "service order ID, common to all CUDs inside this request.",
+            "type": "string",
+            "minLength": 1
+          },
+          "location_id": {
+            "type": "integer",
+            "description": "Store code ID, must exist inside the registered stores database.",
+            "format": "int32"
+          },
+          "type_of_charge": {
+            "description": "free use for retailer, for special types of load.",
+            "type": "string",
+            "minLength": 1
+          },
+          "last_mile": {
+            "description": "1 if the package will be transported directly from the store to the receiver, 0 if the package goes from the store to Transvip distribution center",
+            "type": "integer",
+            "default": 1,
+            "minimum": 0,
+            "maximum": 1
+          },
+          "quantity_boxes": {
+            "type": "integer",
+            "description": "Amount of boxes for this complete service order, by default is set to 1",
+            "format": "int32",
+            "default": 1,
+            "minimum": 1
+          },
+          "pickup_date": {
+            "type": "string",
+            "description": "Pick up date suggested by the retailer in date format (YYYY-MM-DD).",
+            "format": "date",
+            "pattern": "^([0-9][0-9][0-9][0-9])-([0-1][0-9])-([0-3][0-9])$"
+          },
+          "cuds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cud"
+            },
+            "description": ""
+          },
+          "buyer": {
+            "$ref": "#/components/schemas/Buyer"
+          },
+          "receiver": {
+            "$ref": "#/components/schemas/Receiver"
+          },
+          "dropoff": {
+            "$ref": "#/components/schemas/Dropoff"
+          }
+        },
+        "example": {
+          "service_order_id": "87420045-1119",
+          "location_id": 10034,
+          "type_of_charge": "Non Refrigerated",
+          "last_mile": 1,
+          "quantity_boxes": 1,
+          "pickup_date": "2020-07-31",
+          "cuds": [
+            {
+              "guide_number": "",
+              "cud": "0390050001423459280101",
+              "product_description": "Set platos Rojos New Age",
+              "product_price": "18980",
+              "product_quantity": "2"
+            },
+            {
+              "guide_number": "",
+              "cud": "0390050001423459280102",
+              "product_description": "Vasos rojos Old Age",
+              "product_price": "6990",
+              "product_quantity": "1"
+            }
+          ],
+          "buyer": {
+            "buyer_name": "Joe comprador",
+            "buyer_phone_number": "987654321",
+            "buyer_email": "comprador@myemail.com",
+            "buyer_rut": "14987973-0"
+          },
+          "receiver": {
+            "receiver_rut": "24689658-5",
+            "receiver_name": "Jane receptora",
+            "receiver_phone_number": "987654320",
+            "receiver_email": "jane@emailreceptor.com"
+          },
+          "dropoff": {
+            "drop_address": "Argomedo 60",
+            "drop_address_line_2": "Depto 13",
+            "drop_comuna": "Santiago",
+            "drop_observations": "Tocar la puerta, el citofono no funciona",
+            "drop_date": "2020-08-02"
+          }
+        }
+      },
+      "Cud": {
+        "title": "Cud",
+        "required": ["cud", "product_description", "product_price", "product_quantity"],
+        "description": "CUD item, assigned to this service order and must contain all fields defined here.",
+        "type": "object",
+        "properties": {
+          "guide_number": {
+            "type": "string",
+            "description": "Guide number for this item, if it's assigned later use an empty string."
+          },
+          "cud": {
+            "type": "string",
+            "description": "CUD code for this item.",
+            "minLength": 1
+          },
+          "product_description": {
+            "type": "string",
+            "description": "Product description",
+            "minLength": 1
+          },
+          "product_price": {
+            "type": "string",
+            "description": "Package retail price",
+            "minLength": 1
+          },
+          "product_quantity": {
+            "type": "string",
+            "description": "Amount of items shipped under this CUD.",
+            "minLength": 1
+          }
+        },
+        "example": {
+          "guide_number": "",
+          "cud": "0390050001423459280101",
+          "product_description": "Set platos Rojos New Age",
+          "product_price": "18980",
+          "product_quantity": "2"
+        }
+      },
+      "Buyer": {
+        "title": "Buyer",
+        "required": ["buyer_name", "buyer_phone_number", "buyer_email"],
+        "description": "Buyer represents the person that pays for the item delivery, it is not necessarily related to the receiver. This is reserved for corporate usage, use only valid and approved credentials and data in this object",
+        "type": "object",
+        "properties": {
+          "buyer_name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "buyer_phone_number": {
+            "type": "string",
+            "minLength": 1
+          },
+          "buyer_email": {
+            "type": "string",
+            "minLength": 1
+          },
+          "buyer_rut": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "buyer_name": "Joe comprador",
+          "buyer_phone_number": "987654321",
+          "buyer_email": "comprador@myemail.com",
+          "buyer_rut": "14987973-0"
+        }
+      },
+      "Receiver": {
+        "title": "Receiver",
+        "required": ["receiver_rut", "receiver_name", "receiver_phone_number"],
+        "description": "Receiver represents the person that will be receiving the package, it is not necessarily related to the buyer.",
+        "type": "object",
+        "properties": {
+          "receiver_rut": {
+            "type": "string",
+            "description": "Receiver's Rut. Format: don't use dots and use a dash",
+            "minLength": 1
+          },
+          "receiver_name": {
+            "type": "string",
+            "description": "Receiver's name.",
+            "minLength": 1
+          },
+          "receiver_phone_number": {
+            "type": "string",
+            "description": "Receiver's phone number. Format: 9 numbers.",
+            "default": "",
+            "minLength": 1
+          },
+          "receiver_email": {
+            "type": "string",
+            "description": "Receiver's email."
+          }
+        },
+        "example": {
+          "receiver_rut": "24689658-5",
+          "receiver_name": "Jane receptora",
+          "receiver_phone_number": "987654320",
+          "receiver_email": "jane@emailreceptor.com"
+        }
+      },
+      "Dropoff": {
+        "title": "Dropoff",
+        "required": ["drop_address", "drop_comuna", "drop_date"],
+        "type": "object",
+        "properties": {
+          "drop_address": {
+            "type": "string",
+            "description": "Drop address, will be used to geocode the location.",
+            "minLength": 1
+          },
+          "drop_address_line_2": {
+            "type": "string",
+            "description": "Drop address line 2, information about appartment, suite, etc. Will not be using to geocode the location"
+          },
+          "drop_comuna": {
+            "type": "string",
+            "description": "Comuna, will be used as part of the address.",
+            "minLength": 1
+          },
+          "drop_observations": {
+            "type": "string",
+            "description": "Instructions for the delivery person."
+          },
+          "drop_date": {
+            "type": "string",
+            "format": "date",
+            "description": "Drop off date suggested by the retailer in date format (YYYY-MM-DD).",
+            "pattern": "^([0-9][0-9][0-9][0-9])-([0-1][0-9])-([0-3][0-9])$"
+          }
+        },
+        "example": {
+          "drop_address": "Argomedo 60",
+          "drop_address_line_2": "Depto 13",
+          "drop_comuna": "Santiago",
+          "drop_observations": "Tocar la puerta, el citofono no funciona",
+          "drop_date": "2020-08-02"
+        }
+      },
+      "orderModificationRequest": {
+        "title": "orderModificationRequest",
+        "required": ["service_order_id"],
+        "type": "object",
+        "properties": {
+          "service_order_id": {
+            "type": "string",
+            "description": "service order ID, will be used to find and match the order.",
+            "minLength": 1
+          },
+          "location_id": {
+            "type": "integer",
+            "description": "Store code ID, must exist inside the registered stores database.",
+            "format": "int32"
+          },
+          "type_of_charge": {
+            "type": "string",
+            "description": "free use for retailer, for special types of load."
+          },
+          "last_mile": {
+            "type": "integer",
+            "description": "1 if the package will be transported directly from the store to the receiver, 0 if the package goes from the store to Transvip distribution center",
+            "default": 1,
+            "minimum": 0,
+            "maximum": 1
+          },
+          "quantity_boxes": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Amount of boxes for this complete service order, by default is set to 1",
+            "minimum": 1
+          },
+          "pickup_date": {
+            "type": "string",
+            "description": "Pick up date suggested by the retailer in date format (YYYY-MM-DD).",
+            "format": "date",
+            "pattern": "^([0-9][0-9][0-9][0-9])-([0-1][0-9])-([0-3][0-9])$"
+          },
+          "cuds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cud"
+            },
+            "description": ""
+          },
+          "buyer": {
+            "$ref": "#/components/schemas/Buyer"
+          },
+          "receiver": {
+            "$ref": "#/components/schemas/Receiver"
+          },
+          "dropoff": {
+            "$ref": "#/components/schemas/Dropoff"
+          }
+        },
+        "example": {
+          "service_order_id": "87420045-1108",
+          "location_id": 10034,
+          "type_of_charge": "Non Refrigerated",
+          "last_mile": 1,
+          "quantity_boxes": 1,
+          "pickup_date": "2020-07-31",
+          "cuds": [
+            {
+              "guide_number": "",
+              "cud": "0390050001423459280101",
+              "product_description": "Set platos Rojos New Age",
+              "product_price": "18980",
+              "product_quantity": "2"
+            },
+            {
+              "guide_number": "",
+              "cud": "0390050001423459280102",
+              "product_description": "Vasos rojos Old Age",
+              "product_price": "6990",
+              "product_quantity": "1"
+            }
+          ],
+          "buyer": {
+            "buyer_name": "Joe comprador",
+            "buyer_phone_number": "987654321",
+            "buyer_email": "comprador@myemail.com",
+            "buyer_rut": "14987973-0"
+          },
+          "receiver": {
+            "receiver_rut": "24689658-5",
+            "receiver_name": "Jane receptora",
+            "receiver_phone_number": "987654320",
+            "receiver_email": "jane@emailreceptor.com"
+          },
+          "dropoff": {
+            "drop_address": "Argomedo 60",
+            "drop_address_line_2": "Depto 13",
+            "drop_comuna": "Santiago",
+            "drop_observations": "Tocar la puerta, el citofono no funciona",
+            "drop_date": "2020-08-02"
+          }
+        }
+      },
+      "orderCancellationRequest": {
+        "title": "orderCancellationRequest",
+        "required": ["service_order_id", "cancellation_reason", "cancellation_id"],
+        "type": "object",
+        "properties": {
+          "service_order_id": {
+            "type": "string",
+            "description": "service order ID to cancel."
+          },
+          "cancellation_reason": {
+            "type": "string",
+            "description": "user provided reason for the cancellation."
+          },
+          "cancellation_id": {
+            "type": "string",
+            "description": "system provided reason for the cancellation."
+          }
+        },
+        "example": {
+          "service_order_id": "87420045-2120",
+          "cancellation_reason": "buyer does not want the product",
+          "cancellation_id": "1"
+        }
+      },
+      "productCancellationRequest": {
+        "title": "productCancellationRequest",
+        "required": ["cud", "cancellation_reason", "cancellation_id"],
+        "type": "object",
+        "properties": {
+          "cud": {
+            "type": "string",
+            "description": "CUD to cancel."
+          },
+          "cancellation_reason": {
+            "type": "string",
+            "description": "user provided reason for the cancellation."
+          },
+          "cancellation_id": {
+            "type": "string",
+            "description": "system provided reason for the cancellation."
+          }
+        },
+        "example": {
+          "cud": "10054566568879",
+          "cancellation_reason": "buyer does not want the product",
+          "cancellation_id": "1"
+        }
+      },
+      "productPostCreationRequest": {
+        "title": "productPostCreationRequest",
+        "required": ["cud", "newStatus"],
+        "type": "object",
+        "properties": {
+          "cud": {
+            "type": "string",
+            "description": "CUD to postcreate."
+          },
+          "newStatus": {
+            "type": "integer",
+            "description": "new physical status to update within this status."
+          }
+        },
+        "example": {
+          "cud": "10054566568879",
+          "cancellation_reason": "buyer does not want the product",
+          "cancellation_id": "1"
+        }
+      },
+      "notificationReceiveRequest": {
+        "title": "notificationReceiveRequest",
+        "required": ["service_order_id", "order_state", "cuds"],
+        "type": "object",
+        "properties": {
+          "service_order_id": {
+            "type": "string",
+            "description": "service order ID, will be used to find and match the order.",
+            "minLength": 1
+          },
+          "order_state": {
+            "type": "integer",
+            "description": "order state code, valid are 6 accepted and 9 cancelled.",
+            "default": 0
+          },
+
+          "cuds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CudStatusUpdate"
+            },
+            "description": ""
+          }
+        },
+        "example": {
+          "cud": "10054566568879",
+          "cancellation_reason": "buyer does not want the product",
+          "cancellation_id": "1"
+        }
+      },
+      "CudStatusUpdate": {
+        "title": "CudStatusUpdate",
+        "required": ["cud_id", "cud_status"],
+        "description": "CUD item, assigned to this service order and must contain all fields defined here.",
+        "type": "object",
+        "properties": {
+          "guide_number": {
+            "type": "string",
+            "description": "Guide number for this item, if it's assigned later use an empty string."
+          },
+          "cud_id": {
+            "type": "string",
+            "description": "CUD code for this item.",
+            "minLength": 1
+          },
+          "cud_status": {
+            "type": "string",
+            "description": "cud state code, valid are 6 accepted and 9 cancelled.",
+            "minLength": 1
+          }
+        },
+        "example": {
+          "guide_number": "",
+          "cud": "0390050001423459280101",
+          "product_description": "Set platos Rojos New Age",
+          "product_price": "18980",
+          "product_quantity": "2"
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Documentation",
+      "description": ""
+    }
+  ]
+}

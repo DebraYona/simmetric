@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "title": "orderCreation JSON schema",
+  "description": "Required schema for a new order creation, may contain any number of CUDs. All fields are required, including nested objects",
+  "default": {},
+
+  "required": ["service_order_id", "order_state"],
+  "additionalProperties": true,
+  "properties": {
+    "service_order_id": {
+      "type": "string",
+      "title": "The service_order_id schema",
+      "description": "service order ID, will be used to find and match the order.",
+      "default": "",
+      "minLength": 1
+    },
+    "order_state": {
+      "type": "integer",
+      "title": "The order_state schema",
+      "description": "order state code, valid are 6 accepted and 9 cancelled.",
+      "default": 0
+    },
+    "cuds": {
+      "type": "array",
+      "title": "The cuds schema",
+      "minItems": 1,
+      "description": "Array of CUDs, should contain at least 1 CUD. All CUDs here will be updated",
+      "default": [],
+      "additionalItems": true,
+      "items": {
+        "anyOf": [
+          {
+            "type": "object",
+            "title": "CUDs item",
+            "description": "CUD item, assigned to this service order and must contain all fields defined here.",
+            "default": {},
+            "required": ["cud_id", "cud_status"],
+            "additionalProperties": true,
+            "properties": {
+              "cud_id": {
+                "type": "string",
+                "title": "The cud schema",
+                "description": "CUD code for this item.",
+                "default": "",
+                "minLength": 1
+              },
+              "cud_status": {
+                "type": "integer",
+                "title": "The cud_status schema",
+                "description": "cud state code, valid are 6 accepted and 9 cancelled.",
+                "default": 0
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

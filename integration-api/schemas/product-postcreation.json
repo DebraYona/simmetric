@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "title": "product postcreation Update JSON schema",
+  "description": "Required schema for a product postcreation",
+  "default": {},
+
+  "required": ["cud"],
+  "additionalProperties": true,
+  "properties": {
+    "cud": {
+      "type": "string",
+      "title": "The cud schema",
+      "description": "cud for this product."
+    },
+    "newStatus": {
+      "type": "integer",
+      "title": "The newStatus",
+      "description": "new status for this product, to also update the physical status. To avoid updating the status, do not include this parameter"
+    }
+  }
+}

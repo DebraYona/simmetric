@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "title": "product Status Update JSON schema",
+  "description": "Required schema for a product status update",
+  "default": {},
+
+  "required": [
+    "status"
+],
+  "additionalProperties": true,
+  "properties": {
+    "status": {
+      "type": "integer",
+      "title": "The status schema",
+      "description": "code for the new status on this product."
+    },
+    "confirmed_status": {
+      "type": "integer",
+      "title": "The confirmed_status schema",
+      "description": "code for the new confirmed_status on this product."
+    }
+  }
+}

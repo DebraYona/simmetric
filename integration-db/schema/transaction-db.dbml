@@ -1,0 +1,262 @@
+// From https://dbdiagram.io/
+// More information of DBML here https://www.dbml.org/
+
+Project transvip_integration_retail {
+  database_type: 'MySQL'
+  Note: 'Transvip middle layer transaction'
+}
+
+Table Order {
+  id int [pk, increment]
+  service_order_id varchar(255) [not null, unique]
+  contract_id varchar(255) [not null]
+  job_id int
+  last_mile tinyint
+  quantity_boxes tinyint [default: 1]
+  route_id int
+  client_id int
+  location_id int [not null]
+  type_of_charge varchar(255)
+  status varchar(100)
+  request_id varchar(100)
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  Note: 'Main order information'
+}
+
+enum status_cd {
+    pickup_pending
+    pickup_transit
+    pickup_finished
+    warehouse_verified
+    warehouse_dispatched
+    returned_pending
+    returned_pickup
+    returned_warehouse
+}
+
+Table Product {
+  id int [pk, increment]
+  order_id int [not null]
+  guide_number varchar(255)
+  identifier varchar(255) [note: 'CUD number']
+  sku varchar(255)
+  status int
+  confirmed_status int
+  description varchar(255)
+  price int [default: 0]
+  quantity int [default: 0]
+  last_mile tinyint
+  returned tinyint
+  travel_id int
+  geofence_id int
+  job_id int
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  indexes {
+    order_id
+    guide_number
+  }
+}
+
+Table Buyer {
+  id int [pk, increment]
+  order_id int
+  name varchar(255)
+  phone_number varchar(30)
+  email varchar(255)
+  rut varchar(255)
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  indexes {
+    order_id
+  }
+}
+
+Table Receiver {
+  id int [pk, increment]
+  order_id int
+  name varchar(255)
+  phone_number varchar(30)
+  email varchar(255)
+  rut varchar(255)
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  indexes {
+    order_id
+  }
+}
+
+Table Dropoff {
+  id int [pk, increment]
+  order_id int
+  address varchar(255)
+  address_2 varchar(255)
+  comuna varchar(255)
+  observations varchar(255)
+  latitude decimal(11,8)
+  longitude decimal(11,8)
+  time datetime
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  indexes {
+    order_id
+  }
+}
+
+Table Pickup {
+  id int [pk, increment]
+  order_id int
+  address varchar(255)
+  address_2 varchar(255)
+  comuna varchar(255)
+  observations varchar(255)
+  latitude decimal(11,8)
+  longitude decimal(11,8)
+  time datetime
+  time_retail datetime
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  indexes {
+    order_id
+  }
+}
+
+Table Location {
+  id int [pk, increment]
+  name varchar(255)
+  latitude decimal(11,8)
+  longitude decimal(11,8)
+  address varchar(255)
+  address_2 varchar(255)
+  comuna varchar(255)
+  pickup_time time
+  contract_id int
+  contract_id_consolidated int
+}
+
+Table Status {
+  id int [pk, increment]
+  service_order_id varchar(255)
+  job_id int
+  order_id int
+  status varchar(255)
+  message varchar(255)
+  data varchar(255)
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+}
+
+Table Contract {
+  id int [pk, increment]
+  name varchar(255)
+  email varchar(255)
+  rut varchar(255)
+  phone_number varchar(30)
+  service int [default: null]
+  payment int [default: null]
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+}
+
+enum role_type {
+    admin
+    driver
+    warehouse
+}
+
+Table User {
+  id int [pk, increment]
+  cognito_id varchar(255)
+  first_name varchar(255)
+  last_name varchar(255)
+  role int
+  last_login timestamp
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  indexes {
+    cognito_id
+  }
+}
+
+Table Travel {
+  id int [pk, increment]
+  packages_quantity int
+  driver_user_id varchar(255)
+  driver_name varchar(255)
+  driver_last_name varchar(255)
+  warehouse_user_id varchar(255)
+  warehouse_user_name varchar(255)
+  warehouse_user_last_name varchar(255)
+  pickup_location int
+  dropoff_location int
+  initiated tinyint
+  status int
+  initiated_date timestamp
+  on_cd_date timestamp
+  verified_date timestamp
+  dispatched_date timestamp
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+}
+
+Table Consolidation{
+  identifier varchar(255) [pk, unique]
+  order_id varchar(255)
+  service_order_id varchar(255)
+  product_id varchar(255)
+  booking_id varchar(255)
+  grouping varchar(255)
+  scanned int [not null, default:0]
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+}
+
+Table Creation{
+  identifier varchar(255) [pk, unique]
+  service_order_id varchar(255)
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+}
+
+Table UserTravel{
+  user_id int
+  travel_id int
+}
+
+Table UploadFail{
+  id int [pk, increment]
+  identifier varchar(255)
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+}
+
+Table StatusChange{
+  id int [pk, increment]
+  identifier varchar(255)
+  previous_status int
+  new_status int
+  previous_confirmed_status int
+  new_confirmed_status int
+  info varchar(255)
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+}
+
+Ref: "Order"."id" < "Product"."order_id"
+
+Ref: "Order"."id" < "Buyer"."order_id"
+
+Ref: "Order"."id" < "Receiver"."order_id"
+
+Ref: "Order"."id" < "Dropoff"."order_id"
+
+Ref: "Order"."id" < "Pickup"."order_id"
+
+Ref: "Order"."location_id" > "Location"."id"
+
+Ref: "Contract"."id" < "Location"."contract_id"
+
+Ref: "User"."id" < "UserTravel"."user_id"
+
+Ref: "UserTravel"."travel_id" > "Travel"."id"

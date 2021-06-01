@@ -1,0 +1,254 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "title": "orderCreation JSON schema",
+  "description": "Required schema for a new order creation, may contain any number of CUDs. All fields are required, including nested objects",
+  "default": {},
+
+  "required": [
+      "service_order_id",
+      "location_id",
+      "last_mile",
+      "quantity_boxes",
+      "pickup_date",
+      "cuds",
+      "buyer",
+      "receiver",
+      "dropoff"
+  ],
+  "additionalProperties": true,
+  "properties": {
+      "service_order_id": {
+          "type": "string",
+          "title": "The service_order_id schema",
+          "description": "service order ID, common to all CUDs inside this request.",
+          "default": "",
+          "minLength": 1
+      },
+      "location_id": {
+          "type": "integer",
+          "title": "The location_id schema",
+          "description": "Store code ID, must exist inside the registered stores database.",
+          "default": 0
+      },
+      "type_of_charge": {
+          "type": "string",
+          "title": "The type_of_charge schema",
+          "description": "free use for retailer, for special types of load.",
+          "default": "",
+          "minLength": 1
+      },
+      "last_mile": {
+          "type": "integer",
+          "title": "The last_mile schema",
+          "description": "1 if the package will be transported directly from the store to the receiver, 0 if the package goes from the store to Transvip distribution center",
+          "default": 1,
+          "minimum": 0,
+          "maximum": 1
+      },
+      "quantity_boxes": {
+          "type": "integer",
+          "title": "The quantity_boxes schema",
+          "description": "Amount of boxes for this complete service order, by default is set to 1",
+          "default": 1,
+          "minimum": 1
+      },
+      "pickup_date": {
+        "type": "string",
+        "title": "The pickup_date schema",
+        "description": "Pick up date suggested by the retailer in date format (YYYY-MM-DD).",
+        "default": "",
+        "pattern": "^([0-9][0-9][0-9][0-9])-([0-1][0-9])-([0-3][0-9])$"
+    },
+      "cuds": {
+          "type": "array",
+          "title": "The cuds schema",
+          "minItems": 1,
+          "description": "Array of CUDs, should contain at least 1 CUD. All CUDs here will be assigned to this service order",
+          "default": [],
+          "additionalItems": true,
+          "items": {
+              "anyOf": [
+                  {
+                      "type": "object",
+                      "title": "CUDs item",
+                      "description": "CUD item, assigned to this service order and must contain all fields defined here.",
+                      "default": {},
+                      "required": [
+                          "cud",
+                          "product_description",
+                          "product_price",
+                          "product_quantity"
+                      ],
+                      "additionalProperties": true,
+                      "properties": {
+                          "guide_number": {
+                              "type": "string",
+                              "title": "The guide_number schema",
+                              "description": "Guide number for this item, if it's assigned later use an empty string.",
+                              "default": ""
+                          },
+                          "cud": {
+                              "type": "string",
+                              "title": "The cud schema",
+                              "description": "CUD code for this item.",
+                              "default": "",
+                              "minLength": 1
+                          },
+                          "product_description": {
+                              "type": "string",
+                              "title": "The product_description schema",
+                              "description": "Product description",
+                              "default": "",
+                              "minLength": 1
+                          },
+                          "product_price": {
+                              "type": "string",
+                              "title": "The product_price schema",
+                              "description": "Package retail price",
+                              "default": "",
+                              "minLength": 1
+                          },
+                          "product_quantity": {
+                              "type": "string",
+                              "title": "The product_quantity schema",
+                              "description": "Amount of items shipped under this CUD.",
+                              "default": "",
+                              "minLength": 1
+                          }
+                      }
+                  }
+              ]
+          }
+      },
+      "buyer": {
+          "type": "object",
+          "title": "The buyer schema",
+          "description": "Buyer represents the person that pays for the item delivery, it is not necessarily related to the receiver. This is reserved for corporate usage, use only valid credentials and data in this object",
+          "default": {},
+          "required": [
+              "buyer_name",
+              "buyer_phone_number",
+              "buyer_email"
+          ],
+          "additionalProperties": true,
+          "properties": {
+              "buyer_name": {
+                  "type": "string",
+                  "title": "The buyer_name schema",
+                  "description": "buyer's name.",
+                  "default": "",
+                  "minLength": 1
+              },
+              "buyer_phone_number": {
+                  "type": "string",
+                  "title": "buyer's phone number",
+                  "description": "An explanation about the purpose of this instance.",
+                  "default": "",
+                  "minLength": 1
+              },
+              "buyer_email": {
+                  "type": "string",
+                  "title": "buyer's email",
+                  "description": "An explanation about the purpose of this instance.",
+                  "default": "",
+                  "minLength": 1
+              },
+              "buyer_rut": {
+                  "type": "string",
+                  "title": "buyer's RUT",
+                  "description": "An explanation about the purpose of this instance.",
+                  "default": ""
+              }
+          }
+      },
+      "receiver": {
+          "type": "object",
+          "title": "The receiver schema",
+          "description": "Receiver represents the person that will be receiving the package, it is not necessarily related to the buyer.",
+          "default": {},
+          "required": [
+              "receiver_rut",
+              "receiver_name",
+              "receiver_phone_number"
+          ],
+          "additionalProperties": true,
+          "properties": {
+              "receiver_rut": {
+                  "type": "string",
+                  "title": "The receiver_rut schema",
+                  "description": "Receiver's Rut. Format: don't use dots and use a dash",
+                  "default": "",
+                  "minLength": 1
+              },
+              "receiver_name": {
+                  "type": "string",
+                  "title": "The receiver_name schema",
+                  "description": "Receiver's name.",
+                  "default": "",
+                  "minLength": 1
+              },
+              "receiver_phone_number": {
+                  "type": "string",
+                  "title": "The receiver_phone_number schema",
+                  "description": "Receiver's phone number. Format: 9 numbers.",
+                  "default": "",
+                  "minLength": 1
+              },
+              "receiver_email": {
+                  "type": "string",
+                  "title": "The receiver_email schema",
+                  "description": "Receiver's email.",
+                  "default": ""
+              }
+          }
+      },
+      "dropoff": {
+          "type": "object",
+          "title": "The dropoff schema",
+          "description": "Contains geographic and delivery information.",
+          "default": {},
+          "required": [
+              "drop_address",
+              "drop_comuna",
+              "drop_date"
+          ],
+          "additionalProperties": true,
+          "properties": {
+              "drop_address": {
+                  "type": "string",
+                  "title": "The drop_address schema",
+                  "description": "Drop address, will be used to geocode the location.",
+                  "default": "",
+                  "minLength": 1
+              },
+              "drop_address_line_2": {
+                  "type": "string",
+                  "title": "The drop_address_line_2 schema",
+                  "description": "Drop address line 2, information about appartment, suite, etc. Will not be using to geocode the location",
+                  "default": ""
+              },
+              "drop_comuna": {
+                  "type": "string",
+                  "title": "The drop_comuna schema",
+                  "description": "Comuna, will be used as part of the address.",
+                  "default": "",
+                  "minLength": 1
+              },
+              "drop_observations": {
+                  "type": "string",
+                  "title": "The drop_observations schema",
+                  "description": "Instructions for the delivery person.",
+                  "default": ""
+              },
+              "drop_date": {
+                  "type": "string",
+                  "title": "The drop_date schema",
+                  "description": "Drop off date suggested by the retailer in date format (YYYY-MM-DD).",
+                  "default": "",
+                  "pattern": "^([0-9][0-9][0-9][0-9])-([0-1][0-9])-([0-3][0-9])$"
+              }
+          }
+      }
+  }
+}

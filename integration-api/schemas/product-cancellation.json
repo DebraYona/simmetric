@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "title": "orderCreation JSON schema",
+  "description": "Required schema for an order cancellation",
+  "default": {},
+
+  "required": [
+      "cud",
+      "cancellation_reason",
+      "cancellation_id"
+  ],
+  "additionalProperties": true,
+  "properties": {
+      "service_order_id": {
+          "type": "string",
+          "title": "The cud schema",
+          "description": "CUD to cancel.",
+          "default": "",
+          "minLength": 1
+      },
+        "cancellation_reason": {
+            "type": "string",
+            "title": "The cancellation_reason schema",
+            "description": "user provided reason for the cancellation.",
+            "default": "",
+            "minLength": 1
+        },
+        "cancellation_id": {
+            "type": "string",
+            "title": "The cancellation_id schema",
+            "description": "system provided reason for the cancellation.",
+            "default": "",
+            "minLength": 1
+        }
+    }
+}

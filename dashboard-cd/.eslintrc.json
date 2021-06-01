@@ -1,0 +1,49 @@
+{
+  "root": true,
+  "extends": [
+    "airbnb",
+    "airbnb/hooks",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:import/typescript",
+    "plugin:jest/recommended",
+    "plugin:testing-library/recommended",
+    "plugin:testing-library/react",
+    "plugin:prettier/recommended",
+    "prettier/@typescript-eslint",
+    "prettier/react"
+  ],
+  "env": {
+    "browser": true
+  },
+  "rules": {
+    "@typescript-eslint/explicit-function-return-type": "off",
+    "react/jsx-filename-extension": [
+      1,
+      { "extensions": [".js", ".jsx", ".tsx"] }
+    ],
+    "react/jsx-props-no-spreading": "off",
+    "import/extensions": [
+      "error",
+      "ignorePackages",
+      {
+        "js": "never",
+        "mjs": "never",
+        "jsx": "never",
+        "ts": "never",
+        "tsx": "never"
+      }
+    ],
+    "import/no-extraneous-dependencies": [
+      "error",
+      {
+        "optionalDependencies": false,
+        "devDependencies": [".storybook/**", "src/stories/**"]
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["**/*.test.{ts,tsx}"]
+    }
+  ]
+}
